@@ -1,16 +1,22 @@
 from langchain_chroma import Chroma
 from langchain_nomic.embeddings import NomicEmbeddings
+from langchain.prompts import PromptTemplate
+from langchain_community.chat_models import ChatOllama
+from langchain_groq import ChatGroq
+from langchain_core.output_parsers import JsonOutputParser
+
+import dotenv
 import logging
 import sys
-import os
 
+# setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(message)s',
     )
 log = logging.getLogger()
 
-os.environ["LANGCHAIN_TRACING_V2"] = "false"
+dotenv.load_dotenv()
 db_dir = 'chromadb'
 
 # load vectorDB
@@ -37,15 +43,27 @@ log.info(f'Question:\n\n{question}\n')
 log.info(f'Number of relevant docs: {len(docs)}')
 
 
-### Retrieval Grader
+# setup the LLM
 
-from langchain.prompts import PromptTemplate
-from langchain_community.chat_models import ChatOllama
-from langchain_core.output_parsers import JsonOutputParser
+#llm_mode = 'local'
+llm_mode = 'groq'
+
+log.info(f'******  LLM Mode: {llm_mode}  ******')
 
 # LLM
-local_llm = "llama3.1"# "mistral"
-llm = ChatOllama(model=local_llm, format="json", temperature=0)
+if llm_mode == 'local':
+    llm_model = "llama3.1"# "mistral"
+    llm = ChatOllama(model=llm_model, temperature=0)
+elif llm_mode == 'groq':
+    llm_model = "llama-3.1-70b-versatile"
+    llm = ChatGroq(model=llm_model, temperature=0)
+else:
+    log.error(f'Unknown LLM mode {llm_mode}')
+
+
+### Retrieval Grader
+
+#llm = ChatOllama(model=local_llm, format="json", temperature=0)
 
 prompt = PromptTemplate(
     template="""You are a grader assessing relevance of a retrieved document to a user question. \n 
@@ -91,9 +109,6 @@ log.info(prompt)
     )
 )]
 """
-
-# LLM
-llm = ChatOllama(model=local_llm, temperature=0)
 
 # Post-processing
 def format_docs(docs):

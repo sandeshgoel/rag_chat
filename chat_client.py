@@ -2,7 +2,7 @@ import requests
 import json
 
 def chat_with_bot(message):
-    url = "http://127.0.0.1:5000/chat"
+    url = "http://127.0.0.1:5678/chat"
     headers = {"Content-Type": "application/json"}
     data = {"message": message}
 
