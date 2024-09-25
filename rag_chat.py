@@ -298,7 +298,7 @@ def predict(ques, history=None):
     log.info(f'Question:\n\n{ques}\n')
     result = app.invoke({'question': ques})
 
-    log.info(f'Answer:\n\n{result.get('generation', result)}\n')
+    log.info(f'Answer:\n\n{result.get("generation", result)}\n')
     return result.get('generation', 'ERROR')
 
 ques = 'how should i plan for my retirement?'
