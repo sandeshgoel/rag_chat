@@ -1,11 +1,26 @@
-create.db.py
-    Run this to create the database
+This repo contains code to create a RAG-LLM based chatbot.
 
-chat_ui.py
-    Run this to invoke a UI chatbot
+Step 1: Prepare the data
 
-chat_server.py
-    Run this to create a rest API endpoint for chat
+    python create.db.py
+    This creates the retrieval database using the urls and documents mentioned in the file
 
-chat_client.py
-    Run this to connect to chat_server
+Step 2: Install local LLM
+    
+    Download and install ollama from ollama.com
+    
+    ollama pull llama3.1
+    This installs the llama3.1 model locally
+
+Step 3: Launch the chatbot
+
+    python chat_ui.py
+    This invokes a UI chatbot using a simple gradio based interface
+
+Running chat as a server
+
+    python chat_server.py
+    This creates a rest API endpoint for chat using flask
+
+    python chat_client.py
+    This is a sample chat client which connects to chat_server

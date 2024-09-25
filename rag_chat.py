@@ -27,7 +27,7 @@ if num_docs == 0:
     sys.exit(1)
 retriever = vectorstore.as_retriever()
 
-log.info('retriever generated')
+log.info('retriever generated - testing it ...')
 
 # Test retriever
 question = "financial plan"
@@ -71,7 +71,6 @@ if score.get('score', '') != 'yes':
     sys.exit(1)
 """
 
-
 ### Generate
 
 from langchain import hub
@@ -79,7 +78,19 @@ from langchain_core.output_parsers import StrOutputParser
 
 # Prompt
 prompt = hub.pull("rlm/rag-prompt")
-#log.info(prompt)
+log.info(prompt)
+
+"""
+[HumanMessagePromptTemplate(
+    prompt=PromptTemplate(
+        input_variables=['context', 'question'], 
+        template="You are an assistant for question-answering tasks. Use the following 
+        pieces of retrieved context to answer the question. If you don't know the answer, 
+        just say that you don't know. Use three sentences maximum and keep the answer concise.\n
+        Question: {question} \nContext: {context} \nAnswer:"
+    )
+)]
+"""
 
 # LLM
 llm = ChatOllama(model=local_llm, temperature=0)
@@ -227,25 +238,32 @@ from langgraph.graph import END, StateGraph, START
 
 workflow = StateGraph(GraphState)
 
+# whether to include grading step in the graph or not
+include_grading_step = False
+
 # Define the nodes
 workflow.add_node("retrieve", retrieve)  # retrieve
-workflow.add_node("grade_documents", grade_documents)  # grade documents
+if (include_grading_step):
+    workflow.add_node("grade_documents", grade_documents)  # grade documents
+    workflow.add_node("fail", fail)  # generatae
 workflow.add_node("generate", generate)  # generatae
-workflow.add_node("fail", fail)  # generatae
 
 # Build graph
 workflow.add_edge(START, "retrieve")
-workflow.add_edge("retrieve", "grade_documents")
-workflow.add_conditional_edges(
-    "grade_documents",
-    decide_to_generate,
-    {
-        False: "fail",
-        True: "generate",
-    },
-)
+if include_grading_step:
+    workflow.add_edge("retrieve", "grade_documents")
+    workflow.add_conditional_edges(
+        "grade_documents",
+        decide_to_generate,
+        {
+            False: "fail",
+            True: "generate",
+        },
+    )
+    workflow.add_edge("fail", END)
+else:
+    workflow.add_edge("retrieve", "generate")
 workflow.add_edge("generate", END)
-workflow.add_edge("fail", END)
 
 from langgraph.checkpoint.memory import MemorySaver
 memory = MemorySaver()
