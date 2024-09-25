@@ -290,7 +290,7 @@ app = workflow.compile()#checkpointer=memory)
 #display(Image(app.get_graph().draw_png()))
 #app.get_graph().print_ascii()
 
-app.get_graph().draw_png(output_file_path='graph.png')
+#app.get_graph().draw_png(output_file_path='graph.png')
 
 config = {"configurable": {"thread_id": "1"}}
 
