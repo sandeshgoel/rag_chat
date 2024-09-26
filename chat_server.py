@@ -17,9 +17,13 @@ def chat():
     data = request.json
     message = data.get('message', '')
     print(f'Message received: {message}')
+
+    if message.lower().strip() == 'ping':
+        response = 'pong'
+    else:
+        response = predict(message)
     
-    response = predict(message)
-    
+    print(f'Response sent: {response}')
     return jsonify({'response': response})
 
 if __name__ == '__main__':
